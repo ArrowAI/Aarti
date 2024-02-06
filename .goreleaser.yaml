@@ -1,0 +1,184 @@
+git:
+  tag_sort: -version:refname
+
+before:
+  hooks:
+  - go mod tidy
+  - make completions
+
+builds:
+- id: aarticlient
+  binary: aarticlient
+  main: ./cmd/aarticlient
+  flags:
+  - -trimpath
+  ldflags:
+  - -s -w -X "aarti.Repo={{.Env.REPO}}" -X "aarti.Version={{.Env.VERSION}}" -X "aarti.Commit={{.Commit}}" -X "aarti.Date={{.CommitDate}}"
+  env:
+  - CGO_ENABLED=0
+  goos:
+  - linux
+  - windows
+  - darwin
+  goarch:
+  - amd64
+  - arm64
+- id: aartiserver
+  binary: aartiserver
+  main: ./cmd/aartiserver
+  flags:
+  - -trimpath
+  ldflags:
+  - -s -w -X "aarti.Repo={{.Env.REPO}}" -X "aarti.Version={{.Env.VERSION}}" -X "aarti.Commit={{.Commit}}" -X "aarti.Date={{.CommitDate}}"
+  env:
+  - CGO_ENABLED=0
+  goos:
+  - linux
+  - windows
+  - darwin
+  goarch:
+  - amd64
+  - arm64
+
+release:
+  prerelease: auto
+  extra_files:
+  - glob: LICENCE
+  - glob: pgp.pub
+
+archives:
+- id: aarticlient
+  format: tar.gz
+  # this name template makes the OS and Arch compatible with the results of `uname`.
+  name_template: >-
+    aarticlient_
+    {{- title .Os }}_
+    {{- if eq .Arch "amd64" }}x86_64
+    {{- else if eq .Arch "386" }}i386
+    {{- else if eq .Arch "arm64" }}aarch64
+    {{- else }}{{ .Arch }}{{ end }}
+    {{- if .Arm }}v{{ .Arm }}{{ end }}
+  # use zip for windows archives
+  format_overrides:
+  - goos: windows
+    format: zip
+- id: aartiserver
+  format: tar.gz
+  # this name template makes the OS and Arch compatible with the results of `uname`.
+  name_template: >-
+    aartiserver_
+    {{- title .Os }}_
+    {{- if eq .Arch "amd64" }}x86_64
+    {{- else if eq .Arch "386" }}i386
+    {{- else if eq .Arch "arm64" }}aarch64
+    {{- else }}{{ .Arch }}{{ end }}
+    {{- if .Arm }}v{{ .Arm }}{{ end }}
+  # use zip for windows archives
+  format_overrides:
+  - goos: windows
+    format: zip
+
+nfpms:
+- id: aarticlient
+  package_name: aarticlient
+  builds:
+  - aarticlient
+  formats:
+  - apk
+  - deb
+  - rpm
+  homepage: https://github.com/{{ .Env.REPO }}
+  license: Apache 2.0
+  vendor: ArrowAI
+  maintainer: ArrowAI
+  description: |-
+    Distribute your artifacts to your end users without any additional administration or maintenance costs.
+
+brews:
+- ids:
+  - aarticlient
+  name: aarticlient
+  repository:
+    owner: linka-cloud
+    name: homebrew-tap
+  folder: Formula
+  homepage: https://github.com/{{ .Env.REPO }}
+  description: Distribute your artifacts to your end users without any additional administration or maintenance costs.
+  license: Apache 2.0 and MIT
+  test: |
+    system "#{bin}/aarticlient --version"
+  install: |-
+    bin.install "aarticlient"
+    bash_completion.install "completions/aarticlient.bash" => "aarticlient"
+    zsh_completion.install "completions/aarticlient.zsh" => "_aarticlient"
+    fish_completion.install "completions/aarticlient.fish"
+
+# requires UPLOAD_aarticlient_USERNAME and UPLOAD_aarticlient_SECRET env vars
+uploads:
+- name: aarticlient
+  ids:
+  - aarticlient
+  exts:
+  - rpm
+  custom_artifact_name: true
+  target: https://rpm.linka.cloud/push
+- name: aarticlient
+  ids:
+  - aarticlient
+  exts:
+  - apk
+  custom_artifact_name: true
+  target: https://apk.linka.cloud/v3.17/main/push
+- name: aarticlient
+  ids:
+  - aarticlient
+  exts:
+  - apk
+  custom_artifact_name: true
+  target: https://apk.linka.cloud/v3.18/main/push
+- name: aarticlient
+  ids:
+  - aarticlient
+  exts:
+  - deb
+  custom_artifact_name: true
+  target: https://deb.linka.cloud/pool/jammy/main/push
+- name: aarticlient
+  ids:
+  - aarticlient
+  exts:
+  - deb
+  custom_artifact_name: true
+  target: https://deb.linka.cloud/pool/focal/main/push
+- name: aarticlient
+  ids:
+  - aarticlient
+  exts:
+  - deb
+  custom_artifact_name: true
+  target: https://deb.linka.cloud/pool/buster/main/push
+- name: aarticlient
+  ids:
+  - aarticlient
+  exts:
+  - deb
+  custom_artifact_name: true
+  target: https://deb.linka.cloud/pool/bullseye/main/push
+checksum:
+  name_template: 'checksums.txt'
+signs:
+- artifacts: all
+  stdin: '{{ .Env.GPG_PASSWORD }}'
+snapshot:
+  name_template: "{{ .Env.VERSION }}"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - "^docs:"
+    - "^test:"
+    - "^tests:"
+    - '^actions:'
+    - '^Makefile:'
+    - '^chore:'
+    - '^goreleaser:'

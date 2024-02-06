@@ -1,0 +1,14 @@
+.idea
+tmp
+.env
+bin
+**/node_modules
+**/build
+!**/.gitkeep
+
+dist/
+completions/
+pkg/http_errors
+pkg/packages/npm
+helm/artifact-registry/Chart.yaml
+docs/registries
