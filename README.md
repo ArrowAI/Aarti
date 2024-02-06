@@ -17,3 +17,8 @@ Sometimes you need to use Private Registries for their internal Private modules,
 
 ### Registry Caching
 Sometimes you want to have a Private Registry to handle caching of Modules. For example you might want a Local NPM Registry so that you can cache your NPM Modules to be available locally without going to NPM Registry. In that case you can use Aarti and a local OCI Docker Registry to run a full local experience.
+
+
+### Credits
+
+Aarti is inspired by [NPM](https://www.npmjs.com) and [Composer](https://getcomposer.org). We are also using the [OCI Artifacts](https://github.com/opencontainers/artifacts) project for the OCI Artifacts implementation. Also we are using the [OCI Distribution](https://github.com/opencontainers/distribution-spec) project for the OCI Registry implementation. Also we are using the Linka Cloud [OCI Artifact Registry](https://github.com/linka-cloud/artifact-registry) project for the OCI Artifact Registry implementation.
